@@ -28,7 +28,7 @@
     * добавляем конфигурацию подключения к базе
     */
     static function config($name, $host, $user, $pswd, $db){
-  		ORM::$config[$name] = array('host'=>$host, 'user'=>$user, 'pswd'=>$pswd, 'db'=>$db);
+  		kORM::$config[$name] = array('host'=>$host, 'user'=>$user, 'pswd'=>$pswd, 'db'=>$db);
       return True;
   	}
 
