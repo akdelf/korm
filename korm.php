@@ -33,7 +33,6 @@
   	}
 
   	
-
   	/**
     ** сonnected DB
     */
@@ -43,11 +42,11 @@
       /*if (isset(ORM::$conn[$conf]))
           return;*/
 
-      if (!is_array(ORM::$config[$conf]))
+      if (!is_array(kORM::$config[$conf]))
         die('no config DB found');
 
      
-      $config = ORM::$config[$conf]; 
+      $config = kORM::$config[$conf]; 
 
 
       $mysqli = new mysqli($config['host'], $config['user'], $config['pswd'], $config['db']);
@@ -55,8 +54,8 @@
           die('Connect Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
       }
 
-            
-      ORM::$conn[$conf] = $mysqli;
+      $mysqli->query('SET NAMES UTF8');      
+      kORM::$conn[$conf] = $mysqli;
      
       return True;
   	
@@ -156,7 +155,6 @@
 
   		$sql = $this->build();
       $result = $this->query($sql);
-      
         
 
       while ($row = $result->fetch_assoc()) {
@@ -168,10 +166,20 @@
   	}
 
 
+    function one() {
+
+      $sql = $this->build();
+      $result = $this->query($sql);
+        
+      return $result->fetch_assoc(); 
+
+    }
+
+
    function query($sql, $conf='default'){
       
      $this->conn($conf);
-     $curr = ORM::$conn[$conf];
+     $curr = kORM::$conn[$conf];
 
      $result =  $curr->query($sql);
       
