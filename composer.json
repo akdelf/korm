@@ -1,7 +1,7 @@
 {
     "name": "akdelf/korm",
     "description": "a PHP micro ORM",
-    "homepage": "http://github.com/akdelf/korm",
+    "homepage": "https://github.com/akdelf/korm.git",
     "keywords": ["ORM"],
     "autoload": {
         "files": ["korm.php"]
