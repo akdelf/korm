@@ -13,12 +13,12 @@
   	private $limit = null;
   	private $columns = '*';
 
-  	static function table($ORM, $conf = 'default') {
+  	static function table($ORM, $conf = '') {
       return new kORM($ORM, $conf);
     }
   	
     
-    function __construct($ORM, $conf = 'default'){
+    function __construct($ORM, $conf = ''){
   		$this->ORM = $ORM;
   		$this->config = $conf; //текущая конфигурация
   	}
@@ -27,9 +27,14 @@
   	/*
     * добавляем конфигурацию подключения к базе
     */
-    static function config($name, $host, $user, $pswd, $db){
+    static function config($name, $user = 'root', $pswd = '', $host = 'localhost', $db = ''){
+      
+      if ($db == '')
+        $db = $name;
+
   		kORM::$config[$name] = array('host'=>$host, 'user'=>$user, 'pswd'=>$pswd, 'db'=>$db);
       return True;
+
   	}
 
   	
@@ -39,19 +44,17 @@
 
     private function conn($conf) {
   		 		
-      /*if (isset(ORM::$conn[$conf]))
-          return;*/
+      if ($conf == '')
+        $config = current(kORM::$config); //first config
+      else  
+        $config = kORM::$config[$conf]; 
 
-      if (!is_array(kORM::$config[$conf]))
-        die('no config DB found');
-
-     
-      $config = kORM::$config[$conf]; 
-
+      if (!is_array($config))
+          error_log('no config DB `'.$conf.'` found'); 
 
       $mysqli = new mysqli($config['host'], $config['user'], $config['pswd'], $config['db']);
       if ($mysqli->connect_error) {
-          die('Connect Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
+          error_log('Connect Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
       }
 
       $mysqli->query('SET NAMES UTF8');      
@@ -94,7 +97,13 @@
 		  return $this;  		
   	}
 
-  	function build(){
+  	function limit($limit){
+      $this->limit = $limit;
+      return $this;
+    } 
+
+
+    function build(){
 
   		$sql = 'SELECT';
   		  		  		
@@ -107,7 +116,7 @@
         $sql .= $this->build_sort();
 
   		if ($this->limit !== null)
-  			$sql .= 'LIMIT '.$this->limit;
+  			$sql .= ' LIMIT '.$this->limit;
 
   		$sql .= ';';
 
@@ -144,7 +153,8 @@
   				$res = ',';
   			
   			$res .= $this->separ($key).' '.$sort;
-  		}
+  		
+      }
 
   		return ' ORDER BY '.$res;
   	
@@ -176,7 +186,7 @@
     }
 
 
-   function query($sql, $conf='default'){
+   function query($sql, $conf=''){
       
      $this->conn($conf);
      $curr = kORM::$conn[$conf];
@@ -190,6 +200,15 @@
       return $result;
     
     }
+
+    /*
+    обслуживание
+    */
+
+    function log() {
+
+    }
+
 
 
 }
