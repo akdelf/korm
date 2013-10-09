@@ -194,7 +194,7 @@
      $result =  $curr->query($sql);
       
       if ($curr->errno) {
-        die('Select Error (' . $mysqli->errno . ') ' . $mysqli->error);
+        error_log('Select Error (' . $mysqli->errno . ') ' . $mysqli->error);
       }
 
       return $result;
