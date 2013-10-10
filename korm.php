@@ -12,6 +12,7 @@
   	private $sort = array();
   	private $limit = null;
   	private $columns = '*';
+    private $cache = 0;
 
   	static function table($ORM, $conf = '') {
       return new kORM($ORM, $conf);
@@ -211,12 +212,10 @@
     
     }
 
-    /*
-    обслуживание
-    */
-
-    function log() {
-
+   
+    function cache($time = 3600){
+      $this->cache = $time;
+      return $this;
     }
 
 
