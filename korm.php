@@ -87,12 +87,22 @@
   		return $this;
   	}
 
-  	function filter($column, $value, $op ='=', $type = 'AND') {
+  	function where($column, $value = 1, $op ='=', $type = 'AND') {
   		$this->filters[] = array('column'=>$column, 'value'=>$value, 'op'=>$op, 'type'=>$type);
   		return $this;
   	} 
 
-  	function sort($column, $type = 'ASC') {
+  	function whor($column, $value = 1, $op ='=') {
+      $this->filters[] = array('column'=>$column, 'value'=>$value, 'op'=>$op, 'type'=>'OR');
+      return $this; 
+    }
+
+    function not($column, $value = 1){
+      $this->filters[] = array('column'=>$column, 'value'=>$value, 'op'=>'<>', 'type'=>'AND');
+      return $this;
+    }
+
+    function sort($column, $type = 'ASC') {
 		  $this->sort[$column] = $type;
 		  return $this;  		
   	}
