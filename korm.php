@@ -1,10 +1,12 @@
 <?php
 
+  
   class kORM {
 
   	
   	static $config = array(); //конфиги подключения к базе
   	static $conn = array(); // все подключения
+    static $memcache = '';
 
   	private $ORM = '';
   	private $conf = 'default';
@@ -12,18 +14,30 @@
   	private $sort = array();
   	private $limit = null;
   	private $columns = '*';
-    private $cache = 0;
+    private $time = 0; // cache time
 
-  	static function table($ORM, $conf = '') {
-      return new kORM($ORM, $conf);
-    }
-  	
-    
-    function __construct($ORM, $conf = ''){
+
+  	function __construct($ORM, $conf = ''){
   		$this->ORM = $ORM;
   		$this->config = $conf; //текущая конфигурация
   	}
 
+
+    static function table($ORM, $conf = '') {
+      return new kORM($ORM, $conf);
+    }
+
+
+    //активируем мемкеш
+    static function memcache($host = '127.0.0.1', $port = 11211) {
+        
+        if (class_exists('Memcache')) {
+          kORM::$memcache = new Memcache;
+          kORM::$memcache->connect($host, $port);
+        }  
+      
+        return;
+    }
 
   	/*
     * добавляем конфигурацию подключения к базе
@@ -197,27 +211,55 @@
     }
 
 
-   function query($sql, $conf=''){
+  function query($sql, $conf=''){
       
-     $this->conn($conf);
-     $curr = kORM::$conn[$conf];
+    if ($this->time > 0)
+        $result = $this->cache($sql);
 
-     $result =  $curr->query($sql);
+    $this->conn($conf);
+    $curr = kORM::$conn[$conf];
+
+    $result = $curr->query($sql);
+
+    if ($this->time > 0)
+      $this->cache($sql, $result);
       
-      if ($curr->errno) {
-        error_log('Select Error (' . $mysqli->errno . ') ' . $mysqli->error);
-      }
+    if ($curr->errno) 
+      error_log('Select Error (' . $mysqli->errno . ') ' . $mysqli->error);
+    
 
-      return $result;
+    return $result;
+    
+  }
+
+   
+    function cache($sql, $value = null) {
+
+      $key = md5($sql);
+
+      if (is_null($value)) 
+         return korm::$memcache->set($key, $value, False, $this->time);   
+
+      if ($result = korm::$memcache->get($key))
+          return $result;
+      else
+          return False;
     
     }
 
-   
-    function cache($time = 3600){
-      $this->cache = $time;
+
+    function time($time = 3600){
+      $this->time = $time;
       return $this;
     }
 
+  
+  }
 
 
-}
+//функция быстрой загрузки
+if (!function_exists('table')) {
+  function table($table, $conf = ''){
+    return new kORM($table, $conf);
+  }
+}  
