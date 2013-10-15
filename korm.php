@@ -1,35 +1,5 @@
 <?php
 
-  
-  // автозагрузка класса
-
-  
-  //функция быстрой загрузки
-  if (!function_exists('table')) {
-    function table($table, $conf = ''){
-      return new kORM($table, $conf);
-    }
-  }  
-
-
-  spl_autoload_register(function ($class) {
-      
- 
-  $fclass = SITEPATH.'app/models/'.$class.'.php';
-    
-  if (file_exists($fclass))
-     require $fclass;
-    else
-      return table($class);
-
-
-      //error(500, 'not found class '.$class);
-
-  });
-
-
-
-
   class kORM {
 
   	
@@ -44,6 +14,7 @@
   	private $limit = null;
   	private $columns = '*';
     private $time = 0; // cache time
+
 
 
   	function __construct($ORM, $conf = ''){
@@ -285,4 +256,30 @@
   
   }
 
+
+// автозагрузка класса
+
+  
+  //функция быстрой загрузки
+  if (!function_exists('table')) {
+    function table($table, $conf = ''){
+      return new kORM($table, $conf);
+    }
+  }  
+
+
+  spl_autoload_register(function ($class) {
+      
+ 
+  $fclass = SITEPATH.'app/models/'.$class.'.php';
+    
+  if (file_exists($fclass))
+     require $fclass;
+    else
+      return table($class);
+
+
+      //error(500, 'not found class '.$class);
+
+  });
 
