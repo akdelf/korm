@@ -213,6 +213,8 @@
 
   function query($sql, $conf=''){
       
+    echo $sql;
+
     if ($this->time > 0)
         $result = $this->cache($sql);
 
@@ -254,6 +256,55 @@
     }
 
   
+    function set($column, $value = 0) {
+      
+      $this->set[$column] = $value;
+      return $this;
+
+    }
+
+
+    function array2insert($arr = array()){
+      
+      $this->set = $arr;
+      $this->save(); 
+
+      return $this;
+
+    }
+
+    
+    function save() {
+
+      foreach($this->set as $key => $set){
+        
+        $set = trim($set);
+
+        if ($set !== '') {
+          
+          if (isset($columns))
+            $columns .= ',';
+
+          if (isset($values))
+            $values .= ',';
+
+          $columns .= '`'.$key.'`';
+          $values .= '"'.$set.'"';
+
+        }  
+
+      }
+
+      
+     $this->query('INSERT INTO `'.$this->ORM.'` ('.$columns.') VALUES('.$values.');');
+ 
+    }
+
+
+
+   
+
+
   }
 
 
