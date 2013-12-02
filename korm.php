@@ -117,6 +117,18 @@
       return $this;
     }
 
+    function in($column, $values = array(), $type=>'AND') {
+        
+        if (is_array($values)){
+            $values = implode(',', $values);
+        }
+
+        $this->filters[] = array('column'=>$column, 'value'=>$values, 'op'=>'IN', 'type'=>'AND');
+        
+        return $this;
+
+    }
+
     function sort($column, $type = 'ASC') {
 		  $this->sort[$column] = $type;
 		  return $this;  		
