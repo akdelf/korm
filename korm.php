@@ -117,7 +117,11 @@
       return $this;
     }
 
-    function in($column, $values = array(), $type=>'AND') {
+    /**
+    * функция where _  in
+    */
+
+    function in($column, $values = array(), $type = 'AND') {
         
         if (is_array($values)){
             $values = implode(',', $values);
@@ -128,6 +132,29 @@
         return $this;
 
     }
+
+
+    /**
+    * обработка массива с удалением пустых значений
+    */
+    function arr2value($arr, $prefix = ',') {
+
+      $res = '';
+
+      foreach ($arr as $item) {
+        $item = trim($item);
+        if ($item !== '') {
+          if ($res !== '')
+              $res .= ','; 
+          $res .= $item; 
+        }
+      }
+
+      return $res;
+    
+    }
+
+    
 
     function sort($column, $type = 'ASC') {
 		  $this->sort[$column] = $type;
