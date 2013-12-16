@@ -9,6 +9,7 @@
 
   	private $ORM = '';
   	private $conf = 'default';
+    private $sql = '';
   	private $filters = array();
   	private $sort = array();
   	private $limit = null;
@@ -21,6 +22,11 @@
   		$this->ORM = $ORM;
   		$this->config = $conf; //текущая конфигурация
   	}
+
+
+    function __toString() {
+      return $this->build();
+    }
 
 
     static function table($ORM, $conf = '') {
@@ -168,8 +174,11 @@
 
 
     function build(){
+  		
+      if ($this->sql !== '')
+        return $this->sql;
 
-  		$sql = 'SELECT';
+      $sql = 'SELECT';
   		  		  		
   		$sql .= ' '.$this->columns.' FROM '.$this->separ($this->ORM);
   		
@@ -188,6 +197,24 @@
 
   	}
 
+    
+    function count(){
+      
+      $sql = 'COUNT('.$this->columns.') FROM'.$this->separ($this->ORM);
+      $sql .= $this->build_filters();
+
+      $result = $this->query($sql);
+
+      if ($result) {
+        $count = $result->fetch_row();
+        return $count[0];
+       }  
+
+      return null;
+      
+
+    }
+
 
   	function build_filters(){
 
@@ -198,7 +225,13 @@
   			if ($res !== '')
   				$res .= ' '.$filter['type'].' ';
 
-  			$res .=	$this->separ($filter['column']).$filter['op'].$this->quote($filter['value']);
+  			$res .=	$this->separ($filter['column']);
+
+        if ($filter['op'] == '' or $filter['op'] !== ' ')
+          $res .= ' '.$filter['value'];
+        else
+           $res .= $filter['op'].$this->quote($filter['value']);
+
 
   		} 
 
@@ -244,16 +277,17 @@
 
       $sql = $this->build();
       $result = $this->query($sql);
-        
-      return $result->fetch_assoc(); 
+
+      if ($result)
+        return $result->fetch_assoc(); 
+
+      return null;
 
     }
 
 
   function query($sql, $conf=''){
       
-    echo $sql;
-
     if ($this->time > 0)
         $result = $this->cache($sql);
 
@@ -271,6 +305,13 @@
 
     return $result;
     
+  }
+
+
+
+  function sql($sql) {
+    $this->sql = $sql;
+    return $this;
   }
 
    
