@@ -179,6 +179,8 @@
         return $this->sql;
 
       $sql = 'SELECT';
+
+      //if(is_array($this->columns))
   		  		  		
   		$sql .= ' '.$this->columns.' FROM '.$this->separ($this->ORM);
   		
@@ -200,7 +202,7 @@
     
     function count(){
       
-      $sql = 'COUNT('.$this->columns.') FROM'.$this->separ($this->ORM);
+      $sql = 'SELECT COUNT('.$this->columns.') FROM'.$this->separ($this->ORM);
       $sql .= $this->build_filters();
 
       $result = $this->query($sql);
@@ -227,10 +229,12 @@
 
   			$res .=	$this->separ($filter['column']);
 
-        if ($filter['op'] == '' or $filter['op'] !== ' ')
+        $op = trim($filter['op']);
+
+        if ($op == '')
           $res .= ' '.$filter['value'];
         else
-           $res .= $filter['op'].$this->quote($filter['value']);
+          $res .=$op.$this->quote($filter['value']);
 
 
   		} 
