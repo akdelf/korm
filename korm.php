@@ -197,12 +197,9 @@
         $columns = '';
         
         foreach($this->columns as $column) {
-          
           if ($columns !== '')
             $columns .= ',';
-          
           $columns .= $this->separ($column);
-
         }
 
       } 
@@ -210,12 +207,12 @@
   		$sql .= ' '.$columns.' FROM '.$this->separ($this->ORM);
   		
       if ($this->wh_str !== '')
-        $sql .= $this->wh_str;
+        $sql .= ' WHERE '.$this->wh_str;
       elseif (count($this->filters) > 0)
         $sql .= $this->build_filters();
   		
       if ($this->ord_str !== '')
-        $sql .= $this->ord_str;
+        $sql .= ' ORDER BY '.$this->ord_str;
       elseif (count($this->sort) > 0)
         $sql .= $this->build_sort();
 
@@ -304,6 +301,10 @@
       return $result_array;   
         		
   	}
+
+    function num() {
+
+    }
 
 
     function one() {
