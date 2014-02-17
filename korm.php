@@ -15,6 +15,9 @@
   	private $limit = null;
   	private $columns = '*';
     private $time = 0; // cache time
+    private $wh_str = '';
+    private $ord_str = '';
+
 
 
 
@@ -123,6 +126,16 @@
       return $this;
     }
 
+    public function wh_str($sql) {
+      $this->wh_str = $sql;
+      return $this; 
+    }
+
+    public function ord_str($sql) {
+      $this->ord_str = $sql;
+      return $this;
+    }
+
     /**
     * функция where _  in
     */
@@ -161,7 +174,6 @@
     }
 
     
-
     function sort($column, $type = 'ASC') {
 		  $this->sort[$column] = $type;
 		  return $this;  		
@@ -180,14 +192,31 @@
 
       $sql = 'SELECT';
 
-      //if(is_array($this->columns))
+      if(is_array($this->columns)){
+
+        $columns = '';
+        
+        foreach($this->columns as $column) {
+          
+          if ($columns !== '')
+            $columns .= ',';
+          
+          $columns .= $this->separ($column);
+
+        }
+
+      } 
   		  		  		
-  		$sql .= ' '.$this->columns.' FROM '.$this->separ($this->ORM);
+  		$sql .= ' '.$columns.' FROM '.$this->separ($this->ORM);
   		
-      if (count($this->filters) > 0)
+      if ($this->wh_str !== '')
+        $sql .= $this->wh_str;
+      elseif (count($this->filters) > 0)
         $sql .= $this->build_filters();
   		
-      if (count($this->sort) > 0)
+      if ($this->ord_str !== '')
+        $sql .= $this->ord_str;
+      elseif (count($this->sort) > 0)
         $sql .= $this->build_sort();
 
   		if ($this->limit !== null)
