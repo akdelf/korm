@@ -174,10 +174,23 @@
     }
 
     
-    function sort($column, $type = 'ASC') {
+    /* сортировка */
+
+    function order($column, $type = 'ASC') {
 		  $this->sort[$column] = $type;
 		  return $this;  		
   	}
+
+    function desc($column) {
+      $this->sort[$column] = 'DESC';
+      return $this;
+    }
+
+    function sort($column, $type = 'ASC') {
+      $this->sort[$column] = $type;
+      return $this;     
+    }   
+
 
   	function limit($limit){
       $this->limit = $limit;
@@ -202,8 +215,10 @@
           $columns .= $this->separ($column);
         }
 
-      } 
-  		  		  		
+      }
+      else
+        $columns = $this->columns;
+
   		$sql .= ' '.$columns.' FROM '.$this->separ($this->ORM);
   		
       if ($this->wh_str !== '')
@@ -221,7 +236,9 @@
 
   		$sql .= ';';
 
-		  return $sql;
+		  //echo $sql;
+
+      return $sql;
 
   	}
 
