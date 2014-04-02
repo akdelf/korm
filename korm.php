@@ -13,7 +13,7 @@
   	private $filters = array();
   	private $sort = array();
   	private $limit = null;
-  	private $columns = '*';
+  	private $columns = array();
     private $time = 0; // cache time
     private $wh_str = '';
     private $ord_str = '';
@@ -102,7 +102,7 @@
     }	
 
   	function add($column){
-  		$this->columns[] = $column;
+      $this->columns[$column] = $column;
   		return $this;	
   	}
 
@@ -198,6 +198,20 @@
     } 
 
 
+    function join($jtable, $column ,$jkey = '', $type = 'LEFT JOIN'){
+      
+      $key = md5($jtable.$column.$type);
+
+      if ($jkey == '')
+        $jkey = $column; 
+      
+      $this->join[$key] = array('jtable'=>$jtable, 'column' => $column, 'jkey' => $jkey, 'type' => $type);
+      
+      return $this;
+
+    }
+
+
     function build(){
   		
       if ($this->sql !== '')
@@ -207,20 +221,29 @@
 
       if(is_array($this->columns)){
 
-        $columns = '';
+       $columns = '';
         
         foreach($this->columns as $column) {
           if ($columns !== '')
             $columns .= ',';
-          $columns .= $this->separ($column);
+          $columns .= $column;
         }
 
       }
       else
-        $columns = $this->columns;
+        $columns = '*';
 
   		$sql .= ' '.$columns.' FROM '.$this->separ($this->ORM);
   		
+      
+       //joins
+      if (sizeof($this->join) > 0) {
+        
+        foreach($this->join as $join)
+          $sql .= ' '.$join['type'].' '.$join['jtable'].' ON('.$this->ORM.'.'.$join['column'].'='.$join['jtable'].'.'.$join['jkey'].')';
+        
+      }
+
       if ($this->wh_str !== '')
         $sql .= ' WHERE '.$this->wh_str;
       elseif (count($this->filters) > 0)
@@ -231,12 +254,15 @@
       elseif (count($this->sort) > 0)
         $sql .= $this->build_sort();
 
-  		if ($this->limit !== null)
+      
+       		
+      //limit
+      if ($this->limit !== null)
   			$sql .= ' LIMIT '.$this->limit;
 
   		$sql .= ';';
 
-		  //echo $sql;
+		 // echo $sql;
 
       return $sql;
 
