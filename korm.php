@@ -1,6 +1,15 @@
 <?php
 
-  class kORM {
+  /*
+ * This file is part of the Korm package.
+ *
+ * (c) Andrey Kuvshinov <sak.delf@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+  class DB {
 
   	
   	static $config = array(); //конфиги подключения к базе
@@ -101,20 +110,39 @@
       return chr(39).$value.chr(39);
     }	
 
-  	function add($column){
-      $this->columns[$column] = $column;
-  		return $this;	
-  	}
-
   	function columns($columns = array()){
   		$this->columns = $columns;
   		return $this;
   	}
 
-  	function where($column, $value = 1, $op ='=', $type = 'AND') {
+    /**
+   * Add a new select column to the query.
+   *
+   * @param  mixed  $column
+   * @return \Illuminate\Database\Query\Builder|static
+   */
+  public function addSelect($column)
+  {
+    $column = is_array($column) ? $column : func_get_args();
+
+    $this->columns = array_merge((array) $this->columns, $column);
+
+    return $this;
+  }
+  	
+
+
+    function where($column, $value = 1, $op ='=', $type = 'AND') {
   		$this->filters[] = array('column'=>$column, 'value'=>$value, 'op'=>$op, 'type'=>$type);
   		return $this;
   	} 
+
+    function where($column, $operator = null, $value = null, $boolean = 'and'){
+
+    }
+
+    $column, $operator = null, $value = null, $boolean = 'and'
+
 
   	function whor($column, $value = 1, $op ='=') {
       $this->filters[] = array('column'=>$column, 'value'=>$value, 'op'=>$op, 'type'=>'OR');
@@ -174,28 +202,26 @@
     }
 
     
-    /* сортировка */
-
-    function order($column, $type = 'ASC') {
-		  $this->sort[$column] = $type;
-		  return $this;  		
+    /**
+   * Add an "order by" clause to the query.
+   *
+   * @param  string  $column
+   * @param  string  $direction
+   * @return \kORM\korm.php|static
+   */
+    function orderBy($column, $direction = 'asc') {
+		    
+      $direction = strtolower($direction) == 'asc' ? 'asc' : 'desc';  
+      $this->orders[$column] = $type;
+		  
+      return $this;  		
   	}
 
-    function desc($column) {
-      $this->sort[$column] = 'DESC';
-      return $this;
+  
+  	function limit($value) {
+      if ($value > 0) $this->limit = $value;
+          return $this;
     }
-
-    function sort($column, $type = 'ASC') {
-      $this->sort[$column] = $type;
-      return $this;     
-    }   
-
-
-  	function limit($limit){
-      $this->limit = $limit;
-      return $this;
-    } 
 
 
     function join($jtable, $column ,$jkey = '', $type = 'LEFT JOIN'){
@@ -210,6 +236,53 @@
       return $this;
 
     }
+
+
+ 
+  /**
+  * Выбока полей 
+  */
+
+
+   /**
+   * Set the columns to be selected.
+   *
+   * @param  array  $columns
+   * @return \korm\korm.php|static
+   */
+  public function select($columns = array('*'))
+  {
+   
+    $this->columns = is_array($columns) ? $columns : func_get_args();
+    return $this;
+
+  }
+
+
+  /**
+   * Add a new select column to the query.
+   *
+   * @param  mixed  $column
+   * @return \Illuminate\Database\Query\Builder|static
+   */
+  public function addSelect($column)
+  {
+    
+    $column = is_array($column) ? $column : func_get_args();
+    $this->columns = array_merge((array) $this->columns, $column);
+
+    return $this;
+  }
+
+    
+/**
+* операции
+*/
+
+
+function update($attributes = array()){
+
+}
 
 
     function build(){
@@ -285,6 +358,8 @@
       
 
     }
+
+
 
 
   	function build_filters(){
@@ -404,6 +479,14 @@
       else
           return False;
     
+    }
+
+    function remember($minutes = 2, $key = null){
+
+        $this->time = $minutes;
+        $this->cacheKey = $key;
+
+        return $this;
     }
 
 
