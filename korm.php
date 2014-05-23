@@ -27,11 +27,16 @@
     private $wh_str = '';
     private $ord_str = '';
 
+  /**
+   * The where constraints for the query.
+   *
+   * @var array
+   */
+    public $wheres;
 
 
-
-  	function __construct($ORM, $conf = ''){
-  		$this->ORM = $ORM;
+  	function __construct($table, $conf = ''){
+  		$this->table = $ORM;
   		$this->config = $conf; //текущая конфигурация
   	}
 
@@ -41,8 +46,8 @@
     }
 
 
-    static function table($ORM, $conf = '') {
-      return new kORM($ORM, $conf);
+    static function table($table, $conf = '') {
+      return new DB ($table, $conf);
     }
 
 
@@ -65,7 +70,7 @@
       if ($db == '')
         $db = $name;
 
-  		kORM::$config[$name] = array('host'=>$host, 'user'=>$user, 'pswd'=>$pswd, 'db'=>$db);
+  		self::$config[$name] = array('host'=>$host, 'user'=>$user, 'pswd'=>$pswd, 'db'=>$db);
       return True;
 
   	}
@@ -75,12 +80,12 @@
     ** сonnected DB
     */
 
-    private function conn($conf) {
+    private function addConnection($config = array(), $name = null) {
   		 		
       if ($conf == '')
-        $config = current(kORM::$config); //first config
+        $config = current(self::$config); //first config
       else  
-        $config = kORM::$config[$conf]; 
+        $config = self::$config[$conf]; 
 
       if (!is_array($config))
           error_log('no config DB `'.$conf.'` found'); 
@@ -91,7 +96,7 @@
       }
 
       $mysqli->query('SET NAMES UTF8');      
-      kORM::$conn[$conf] = $mysqli;
+      self::$conn[$conf] = $mysqli;
      
       return True;
   	
@@ -133,14 +138,15 @@
 
 
     function where($column, $value = 1, $op ='=', $type = 'AND') {
-  		$this->filters[] = array('column'=>$column, 'value'=>$value, 'op'=>$op, 'type'=>$type);
+  		$this->wheres[] = array('column'=>$column, 'value'=>$value, 'op'=>$op, 'type'=>$type);
   		return $this;
   	} 
 
-    function where($column, $operator = null, $value = null, $boolean = 'and'){
+    function orWhere($column, $operator = null, $value = null){
 
     }
 
+  
     $column, $operator = null, $value = null, $boolean = 'and'
 
 
