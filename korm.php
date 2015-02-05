@@ -1,44 +1,29 @@
 <?php
 
-  /*
- * This file is part of the Korm package.
- *
- * (c) Andrey Kuvshinov <sak.delf@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-  class DB {
+  class kORM {
 
   	
   	static $config = array(); //конфиги подключения к базе
-  	static $connections = array(); // активные подключения
+  	static $conn = array(); // все подключения
     static $memcache = '';
 
-  	private $table = '';
+  	private $ORM = '';
   	private $conf = 'default';
     private $sql = '';
   	private $filters = array();
   	private $sort = array();
   	private $limit = null;
-  	private $columns = '';
+  	private $columns = '*';
     private $time = 0; // cache time
     private $wh_str = '';
     private $ord_str = '';
-    private $join = array();
-
-  /**
-   * The where constraints for the query.
-   *
-   * @var array
-   */
-    public $wheres;
 
 
-  	function __construct($table, $name = ''){
-  		$this->table = $table;
-  		$this->conf = $name; //текущая конфигурация
+
+
+  	function __construct($ORM, $conf = ''){
+  		$this->ORM = $ORM;
+  		//$this->config = $conf; //текущая конфигурация
   	}
 
 
@@ -47,8 +32,8 @@
     }
 
 
-    static function table($table, $conf = '') {
-      return new DB ($table, $conf);
+    static function table($ORM, $conf = '') {
+      return new kORM($ORM, $conf);
     }
 
 
@@ -56,8 +41,8 @@
     static function memcache($host = '127.0.0.1', $port = 11211) {
         
         if (class_exists('Memcache')) {
-          DB::$memcache = new Memcache;
-          DB::$memcache->connect($host, $port);
+          kORM::$memcache = new Memcache;
+          kORM::$memcache->connect($host, $port);
         }  
       
         return;
@@ -66,68 +51,43 @@
   	/*
     * добавляем конфигурацию подключения к базе
     */
-    
+    static function config($name, $user = 'root', $pswd = '', $host = 'localhost', $db = ''){
+      
+      if ($db == '')
+        $db = $name;
+
+  		kORM::$config[$name] = array('host'=>$host, 'user'=>$user, 'pswd'=>$pswd, 'db'=>$db);
+      return True;
+
+  	}
+
   	
   	/**
     ** сonnected DB
     */
 
-  function addconnection($config = array(), $name = 'default') {
+    private function conn($conf) {
+  		 		
+      if ($conf == '')
+        $config = current(kORM::$config); //first config
+      else  
+        $config = kORM::$config[$conf]; 
 
-      $this->config[$name] = $config;
-      $this->config[$name]['name'] = $name;
+      if (!is_array($config))
+          error_log('no config DB `'.$conf.'` found'); 
 
-      return $this;
-  
-  }	
+      $mysqli = new mysqli($config['host'], $config['user'], $config['pswd'], $config['db']);
+      if ($mysqli->connect_error) {
+          error_log('Connect Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
+      }
 
-
-  /**
-  * quick connect DB
-  */
-  static function addconfig($database, $username = 'root', $password = '', $host = 'localhost', $name = '') {
-
-    // connect name = db
-    if ($name == '') 
-        $name = $database;
-
-    self::$config[$name] = array( 'database'=>$database, 'username'=>$username, 'password'=>$password, 'host'=>$host, 'name' => $name );
-
-    return;
-
-
-  }	
-
-
-  private function connection($name = ''){
-    
-    if ($name == '') {
-      $config = current(self::$config); //load first config
-      $name = $config['name']; 
-    }
-    else
-      $config = self::$config[$name]; // load name config
-
-
-    if (isset(self::$connections[$name]))
-        return self::$connections[$name];
-
-    $mysqli = new mysqli($config['host'], $config['username'], $config['password'], $config['database']);
-    
-    if ($mysqli->connect_error) {
-      error_log('Connect Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
-      return False;
-    }
-
-      
       $mysqli->query('SET NAMES UTF8');      
-      self::$connections[$name] = $mysqli;
+      kORM::$conn[$conf] = $mysqli;
      
-      return self::$connections[$name];
+      return True;
   	
-  }
-    
-
+  	}
+  
   	
     /**
     * функции добавления
@@ -141,33 +101,39 @@
       return chr(39).$value.chr(39);
     }	
 
+  	function add($column){
+  		$this->columns[] = $column;
+  		return $this;	
+  	}
+
   	function columns($columns = array()){
   		$this->columns = $columns;
   		return $this;
   	}
 
 
+    function select($columns = array('*'))
+    {
+      
+      if (is_array($columns)) {
+         $this->columns = $columns;  
+      }
+      else {
+          $sargs = func_num_args();
+          if ($sargs > 0)
+              $this->columns = func_get_args();
+          else
+              $this->select =  $columns; 
+      }
+           
+        return $this;
 
+    }
 
-    function wh($column, $value = 1, $operator ='=', $boolean = 'AND') {
-  		$this->wheres[] = array('column' => $column, 'value' => $value, 'operator' => $operator, 'boolean' => $boolean);
+  	function where($column, $value = 1, $op ='=', $type = 'AND') {
+  		$this->filters[] = array('column'=>$column, 'value'=>$value, 'op'=>$op, 'type'=>$type);
   		return $this;
   	} 
-
-
-    function where($column, $operator = null, $value = null, $boolean = 'and'){
-      $this->wheres[] = array('column' => $column, 'value' => $value, 'operator' => $operator, 'boolean' => $boolean);
-      return $this;
-    }
-
-
-    function orWhere($column, $operator = null, $value = null){
-
-    }
-
-  
-  
-
 
   	function whor($column, $value = 1, $op ='=') {
       $this->filters[] = array('column'=>$column, 'value'=>$value, 'op'=>$op, 'type'=>'OR');
@@ -179,7 +145,7 @@
       return $this;
     }
 
-    public function wh_str($sql) {
+    public function wh($sql) {
       $this->wh_str = $sql;
       return $this; 
     }
@@ -227,97 +193,28 @@
     }
 
     
-    /**
-   * Add an "order by" clause to the query.
-   *
-   * @param  string  $column
-   * @param  string  $direction
-   * @return \kORM\korm.php|static
-   */
-    function orderBy($column, $direction = 'asc') {
-		    
-      $direction = strtolower($direction) == 'asc' ? 'asc' : 'desc';  
-      $this->orders[$column] = $type;
-		  
-      return $this;  		
+    /* сортировка */
+
+    function order($column, $type = 'ASC') {
+		  $this->sort[$column] = $type;
+		  return $this;  		
   	}
 
-  
-  	function limit($value) {
-       
-      if ($value > 0) $this->limit = $value;
-      
+    function desc($column) {
+      $this->sort[$column] = 'DESC';
       return $this;
-
     }
 
-    
-    function take($value){
-      
-      return $this->limit($value);
-    
-    }
+    function sort($column, $type = 'ASC') {
+      $this->sort[$column] = $type;
+      return $this;     
+    }   
 
 
-    function join($jtable, $column ,$jkey = '', $type = 'LEFT JOIN'){
-      
-      $key = md5($jtable.$column.$type);
-
-      if ($jkey == '')
-        $jkey = $column; 
-      
-      $this->join[$key] = array('jtable'=>$jtable, 'column' => $column, 'jkey' => $jkey, 'type' => $type);
-      
+  	function limit($limit){
+      $this->limit = $limit;
       return $this;
-
-    }
-
-
- 
-  /**
-  * Выбока полей 
-  */
-
-
-   /**
-   * Set the columns to be selected.
-   *
-   * @param  array  $columns
-   * @return \korm\korm.php|static
-   */
-  public function select($columns = array('*'))
-  {
-   
-    $this->columns = is_array($columns) ? $columns : func_get_args();
-    return $this;
-
-  }
-
-
-  /**
-   * Add a new select column to the query.
-   *
-   * @param  mixed  $column
-   * @return \Illuminate\Database\Query\Builder|static
-   */
-  public function addSelect($column)
-  {
-    
-    $column = is_array($column) ? $column : func_get_args();
-    $this->columns = array_merge((array) $this->columns, $column);
-
-    return $this;
-  }
-
-    
-/**
-* операции
-*/
-
-
-function update($attributes = array()){
-
-}
+    } 
 
 
     function build(){
@@ -329,32 +226,23 @@ function update($attributes = array()){
 
       if(is_array($this->columns)){
 
-       $columns = '';
+        $columns = '';
         
         foreach($this->columns as $column) {
           if ($columns !== '')
             $columns .= ',';
-          $columns .= $column;
+          $columns .= $this->separ($column);
         }
 
       }
       else
-        $columns = '*';
+        $columns = $this->columns;
 
-      $sql .= ' '.$columns.' FROM '.$this->separ($this->table);
+  		$sql .= ' '.$columns.' FROM '.$this->separ($this->ORM);
   		
-      
-       //joins
-      if (sizeof($this->join) > 0) {
-        
-        foreach($this->join as $join)
-          $sql .= ' '.$join['type'].' '.$join['jtable'].' ON('.$this->ORM.'.'.$join['column'].'='.$join['jtable'].'.'.$join['jkey'].')';
-        
-      }
-
       if ($this->wh_str !== '')
         $sql .= ' WHERE '.$this->wh_str;
-      elseif (count($this->wheres) > 0)
+      elseif (count($this->filters) > 0)
         $sql .= $this->build_filters();
   		
       if ($this->ord_str !== '')
@@ -362,15 +250,12 @@ function update($attributes = array()){
       elseif (count($this->sort) > 0)
         $sql .= $this->build_sort();
 
-      
-       		
-      //limit
-      if ($this->limit !== null)
+  		if ($this->limit !== null)
   			$sql .= ' LIMIT '.$this->limit;
 
   		$sql .= ';';
 
-		 // echo $sql;
+		  //echo $sql;
 
       return $sql;
 
@@ -395,20 +280,18 @@ function update($attributes = array()){
     }
 
 
-
-
   	function build_filters(){
 
   		$res = '';
 
-  		foreach ($this->wheres as $filter){
+  		foreach ($this->filters as $filter){
   			
   			if ($res !== '')
-  				$res .= ' '.$filter['boolean'].' ';
+  				$res .= ' '.$filter['type'].' ';
 
   			$res .=	$this->separ($filter['column']);
 
-        $op = trim($filter['operator']);
+        $op = trim($filter['op']);
 
         if ($op == '')
           $res .= ' '.$filter['value'];
@@ -441,49 +324,60 @@ function update($attributes = array()){
   	}
 
 
-  	//results
-
-    function get() {
+  	function all() {
 
   		$sql = $this->build();
       $result = $this->query($sql);
-        
-
+      
       while ($row = $result->fetch_assoc()) {
-          $results[] = $row;
+          $result_array[] = $row;
       }
 
-      return $results;   
+      return $result_array;   
         		
   	}
 
-  
+    function num() {
 
-    function first() {
-
-      $results = $this->limit(1)->get();
+      $sql = $this->build();
+      $result = $this->query($sql);
       
-      return count($results) > 0 ? reset($results) : null;
+      while ($row = $result->fetch_array(MYSQLI_NUM)) {
+          $result_array[] = $row;
+      }
+
+      return $result_array;
+    }
+
+
+    function one() {
+
+      $sql = $this->build();
+      $result = $this->query($sql);
+
+      if ($result)
+        return $result->fetch_assoc(); 
+
+      return null;
 
     }
 
 
-  function query($sql, $name = ''){
+  function query($sql, $conf=''){
       
     if ($this->time > 0)
         $result = $this->cache($sql);
 
-    $curr = $this->connection($name);
-    
+    $this->conn($conf);
+    $curr = kORM::$conn[$conf];
+
     $result = $curr->query($sql);
-    
+
     if ($this->time > 0)
       $this->cache($sql, $result);
       
-    if ($curr->errno) {
+    if ($curr->errno) 
       error_log('Select Error (' . $mysqli->errno . ') ' . $mysqli->error);
-      echo ('Select Error (' . $mysqli->errno . ') ' . $mysqli->error);
-    }
     
 
     return $result;
@@ -510,14 +404,6 @@ function update($attributes = array()){
       else
           return False;
     
-    }
-
-    function remember($minutes = 2, $key = null){
-
-        $this->time = $minutes;
-        $this->cacheKey = $key;
-
-        return $this;
     }
 
 
@@ -585,7 +471,7 @@ function update($attributes = array()){
   //функция быстрой загрузки
   if (!function_exists('table')) {
     function table($table, $conf = ''){
-      return new DB($table, $conf);
+      return new kORM($table, $conf);
     }
   }  
 
