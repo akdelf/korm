@@ -17,13 +17,13 @@
     private $time = 0; // cache time
     private $wh_str = '';
     private $ord_str = '';
-
+    private $increment = '';
 
 
 
   	function __construct($ORM, $conf = ''){
   		$this->ORM = $ORM;
-  		//$this->config = $conf; //текущая конфигурация
+  		$this->config = $conf; //текущая конфигурация
   	}
 
 
@@ -106,29 +106,16 @@
   		return $this;	
   	}
 
-  	function columns($columns = array()){
-  		$this->columns = $columns;
+  	function increment($field = ''){
+      $this->increment = $field;
+      return $this;
+    }
+
+
+    function columns($columns = array()){
+  	  $this->columns = $columns;
   		return $this;
   	}
-
-
-    function select($columns = array('*'))
-    {
-      
-      if (is_array($columns)) {
-         $this->columns = $columns;  
-      }
-      else {
-          $sargs = func_num_args();
-          if ($sargs > 0)
-              $this->columns = func_get_args();
-          else
-              $this->select =  $columns; 
-      }
-           
-        return $this;
-
-    }
 
   	function where($column, $value = 1, $op ='=', $type = 'AND') {
   		$this->filters[] = array('column'=>$column, 'value'=>$value, 'op'=>$op, 'type'=>$type);
@@ -145,7 +132,7 @@
       return $this;
     }
 
-    public function wh($sql) {
+    public function wh_str($sql) {
       $this->wh_str = $sql;
       return $this; 
     }
@@ -328,10 +315,15 @@
 
   		$sql = $this->build();
       $result = $this->query($sql);
-      
-      while ($row = $result->fetch_assoc()) {
-          $result_array[] = $row;
+        
+      if ($this->increment !== '') {
+        while ($row = $result->fetch_assoc())
+          $result_array[$row[$this->increment]] = $row;
       }
+      else {
+           while ($row = $result->fetch_assoc())
+             $result_array[] = $row;
+      }    
 
       return $result_array;   
         		
@@ -339,14 +331,6 @@
 
     function num() {
 
-      $sql = $this->build();
-      $result = $this->query($sql);
-      
-      while ($row = $result->fetch_array(MYSQLI_NUM)) {
-          $result_array[] = $row;
-      }
-
-      return $result_array;
     }
 
 
