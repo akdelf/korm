@@ -13,7 +13,8 @@
   	private $filters = array();
   	private $sort = array();
   	private $limit = null;
-  	private $columns = '*';
+  	private $columns = array();
+    private $select = '';
     private $time = 0; // cache time
     private $wh_str = '';
     private $ord_str = '';
@@ -101,11 +102,7 @@
       return chr(39).$value.chr(39);
     }	
 
-  	function add($column){
-  		$this->columns[] = $column;
-  		return $this;	
-  	}
-
+  	
   	function increment($field = ''){
       $this->increment = $field;
       return $this;
@@ -113,9 +110,21 @@
 
 
     function columns($columns = array()){
-  	  $this->columns = $columns;
-  		return $this;
+  	  
+      if (is_array($columns))
+        $this->columns = $columns;
+  		
+      return $this;
   	}
+
+    function select($sql){
+
+      $this->select = $sql;
+      return $this;
+
+    }
+
+
 
   	function where($column, $value = 1, $op ='=', $type = 'AND') {
   		$this->filters[] = array('column'=>$column, 'value'=>$value, 'op'=>$op, 'type'=>$type);
@@ -211,21 +220,20 @@
 
       $sql = 'SELECT';
 
-      if(is_array($this->columns)){
-
-        $columns = '';
-        
+      if ($this->select !== '')
+          $select = $this->select;
+      elseif (is_array($this->columns)){
+        $select = '';
         foreach($this->columns as $column) {
-          if ($columns !== '')
-            $columns .= ',';
-          $columns .= $this->separ($column);
+          if ($select !== '')
+             $select .= ',';
+            $select .= $this->separ($column);
+          }
         }
+      else 
+        $select = $this->columns;
 
-      }
-      else
-        $columns = $this->columns;
-
-  		$sql .= ' '.$columns.' FROM '.$this->separ($this->ORM);
+  		$sql .= ' '.$select.' FROM '.$this->separ($this->ORM);
   		
       if ($this->wh_str !== '')
         $sql .= ' WHERE '.$this->wh_str;
