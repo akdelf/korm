@@ -14,7 +14,7 @@
   	private $sort = array();
   	private $limit = null;
   	private $columns = array();
-    private $select = '';
+    private $select = '*';
     private $time = 0; // cache time
     private $wh_str = '';
     private $ord_str = '';
@@ -220,6 +220,8 @@
 
       $sql = 'SELECT';
 
+      
+
       if ($this->select !== '')
           $select = $this->select;
       elseif (is_array($this->columns)){
@@ -354,6 +356,30 @@
 
     }
 
+    function update($items = '') {
+
+      if (is_array($items)){
+          
+          $set = '';
+
+          foreach ($items as $key => $value){
+            if ($set !== '')
+                $set .= ',';              
+            $set .= $this->separ($key).'='.$this->quote($value); 
+          }
+
+        $sql = 'UPDATE '.$this->separ($this->ORM).' SET '.$set;
+
+        if (count($this->filters) > 0)
+            $sql .= $this->build_filters();
+        
+        return $this->query($sql.';');
+
+      }
+
+
+    }
+
 
   function query($sql, $conf=''){
       
@@ -368,8 +394,10 @@
     if ($this->time > 0)
       $this->cache($sql, $result);
       
-    if ($curr->errno) 
+    if ($curr->errno) {
       error_log('Select Error (' . $mysqli->errno . ') ' . $mysqli->error);
+      echo 'error: '.$sql."\n";
+    }
     
 
     return $result;
