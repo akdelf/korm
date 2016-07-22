@@ -365,7 +365,7 @@
           foreach ($items as $key => $value){
             if ($set !== '')
                 $set .= ',';              
-            $set .= $this->separ($key).'='.$this->quote($value); 
+            $set .= $this->separ($key).'='.$this->quote(mysql_real_escape_string($value)); 
           }
 
         $sql = 'UPDATE '.$this->separ($this->ORM).' SET '.$set;
@@ -466,7 +466,7 @@
             $values .= ',';
 
           $columns .= '`'.$key.'`';
-          $values .= '"'.$set.'"';
+          $values .= '"'.mysql_real_escape_string($set).'"';
 
         }  
 
