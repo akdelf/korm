@@ -391,6 +391,10 @@
 
     $result = $curr->query($sql);
 
+    if (strripos($sql, 'insert') !== FALSE){
+      return $curr->insert_id;  
+    }
+
     if ($this->time > 0)
       $this->cache($sql, $result);
       
@@ -444,9 +448,7 @@
     function array2insert($arr = array()){
       
       $this->set = $arr;
-      $this->save(); 
-
-      return $this;
+      return $this->save(); 
 
     }
 
@@ -473,7 +475,7 @@
       }
 
       
-     $this->query('INSERT INTO `'.$this->ORM.'` ('.$columns.') VALUES('.$values.');');
+     return $this->query('INSERT INTO `'.$this->ORM.'` ('.$columns.') VALUES('.$values.');');
  
     }
 
