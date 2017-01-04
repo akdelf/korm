@@ -58,6 +58,7 @@
         $db = $name;
 
   		kORM::$config[$name] = array('host'=>$host, 'user'=>$user, 'pswd'=>$pswd, 'db'=>$db);
+      
       return True;
 
   	}
@@ -220,8 +221,6 @@
 
       $sql = 'SELECT';
 
-      
-
       if ($this->select !== '')
           $select = $this->select;
       elseif (is_array($this->columns)){
@@ -236,7 +235,8 @@
         $select = $this->columns;
 
   		$sql .= ' '.$select.' FROM '.$this->separ($this->ORM);
-  		
+
+
       if ($this->wh_str !== '')
         $sql .= ' WHERE '.$this->wh_str;
       elseif (count($this->filters) > 0)
