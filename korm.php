@@ -468,7 +468,7 @@
             $values .= ',';
 
           $columns .= '`'.$key.'`';
-          $values .= '"'.mysql_real_escape_string($set).'"';
+          $values .= '"'.$set.'"';
 
         }  
 
