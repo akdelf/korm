@@ -52,12 +52,12 @@
   	/*
     * добавляем конфигурацию подключения к базе
     */
-    static function config($name, $user = 'root', $pswd = '', $host = 'localhost', $db = ''){
+    static function config($name, $user = 'root', $pswd = '', $host = 'localhost', $db = '', $port = 3306){
       
       if ($db == '')
         $db = $name;
 
-  		kORM::$config[$name] = array('host'=>$host, 'user'=>$user, 'pswd'=>$pswd, 'db'=>$db);
+  		kORM::$config[$name] = array('host'=>$host, 'user'=>$user, 'pswd'=>$pswd, 'db'=>$db, 'port' = $port);
       
       return True;
 
@@ -78,7 +78,7 @@
       if (!is_array($config))
           error_log('no config DB `'.$conf.'` found'); 
 
-      $mysqli = new mysqli($config['host'], $config['user'], $config['pswd'], $config['db']);
+      $mysqli = new mysqli($config['host'], $config['user'], $config['pswd'], $config['db'], $config['port']);
       if ($mysqli->connect_error) {
           error_log('Connect Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
       }
