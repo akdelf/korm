@@ -57,7 +57,7 @@
       if ($db == '')
         $db = $name;
 
-  		kORM::$config[$name] = array('host'=>$host, 'user'=>$user, 'pswd'=>$pswd, 'db'=>$db, 'port' = $port);
+  		kORM::$config[$name] = array('host'=>$host, 'user'=>$user, 'pswd'=>$pswd, 'db'=>$db, 'port' => $port);
       
       return True;
 
