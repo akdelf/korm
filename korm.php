@@ -388,7 +388,7 @@
 
     $this->conn($conf);
     $curr = kORM::$conn[$conf];
-	echo 'query: '.$query."\n"; 	
+	echo 'query: '.$sql."\n"; 	
     $result = $curr->query($sql);
 
     if (strripos($sql, 'insert') !== FALSE){
