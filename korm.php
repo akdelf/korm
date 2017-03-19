@@ -78,7 +78,7 @@
       if (!is_array($config))
           error_log('no config DB `'.$conf.'` found'); 
 
-      $mysqli = new mysqli($config['host'], $config['user'], $config['pswd'], $config['db'], $config['port']);
+      $mysqli = new mysqli($config['host'], $config['user'], $config['pswd'], $config['db']);
       if ($mysqli->connect_error) {
           error_log('Connect Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
       }
