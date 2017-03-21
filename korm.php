@@ -388,12 +388,12 @@
 
     $this->conn($conf);
     $curr = kORM::$conn[$conf];
-	echo 'query: '.$sql."\n"; 	
+//	echo 'query: '.$sql."\n"; 	
     $result = $curr->query($sql);
 
-    if (strripos($sql, 'insert') !== FALSE){
-      return $curr->insert_id;  
-    }
+    //if (strripos($sql, 'insert') !== FALSE){
+    //  return $curr->insert_id;  
+    //}
 
     if ($this->time > 0)
       $this->cache($sql, $result);
