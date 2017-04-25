@@ -400,7 +400,7 @@
       
     if ($curr->errno) {
       error_log('Select Error (' . $mysqli->errno . ') ' . $mysqli->error);
-      echo 'error: '.$sql."\n";
+      //echo 'error: '.$sql."\n";
     }
     
 
