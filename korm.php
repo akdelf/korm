@@ -339,6 +339,20 @@
         		
   	}
 
+
+    function arr($key, $value) {
+
+      $sql = $this->build();
+      $result = $this->query($sql);
+
+      while ($row = $result->fetch_assoc())
+        $result_array[$row[$key]] = $row[$value];
+
+      return $result_array;
+      
+    }
+
+
     function num() {
 
     }
