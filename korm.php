@@ -405,6 +405,9 @@
 //	echo 'query: '.$sql."\n"; 	
     $result = $curr->query($sql);
 
+    if (strripos($sql, 'INSERT INTO') === 0)
+        return $curr->insert_id;
+
     //if (strripos($sql, 'insert') !== FALSE){
     //  return $curr->insert_id;  
     //}
