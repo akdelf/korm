@@ -213,6 +213,13 @@
       return $this;
     } 
 
+    function searched(){
+      $result = $this->one();
+      if (is_array($result))
+        return True;
+      else
+        return False;
+    }
 
     function build(){
   		
