@@ -18,7 +18,7 @@
     private $time = 0; // cache time
     private $wh_str = '';
     private $ord_str = '';
-    private $increment = '';
+    private $where = '';
 
 
 
@@ -214,7 +214,9 @@
     } 
 
     function searched(){
+     
       $result = $this->one();
+      
       if (is_array($result))
         return True;
       else
