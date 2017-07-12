@@ -494,7 +494,7 @@
             $values .= ',';
 
           $columns .= '`'.$key.'`';
-          $values .= '"'.$set.'"';
+          $values .= '"'.addslashes($set).'"';
 
         }  
 
