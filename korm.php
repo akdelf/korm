@@ -492,10 +492,10 @@
 
         if ($set !== '') {
           
-          if (isset($columns))
+          if ($columns !== '')
             $columns .= ',';
 
-          if (isset($values))
+          if ($values !== '')
             $values .= ',';
 
           $columns .= '`'.$key.'`';
@@ -505,8 +505,10 @@
 
       }
 
-      
-     return $this->query('INSERT INTO `'.$this->ORM.'` ('.$columns.') VALUES('.$values.');');
+      $isql = 'INSERT INTO `'.$this->ORM.'` ('.$columns.') VALUES('.$values.');';
+      //echo $isql;
+
+     return $this->query($isql);
  
     }
 
