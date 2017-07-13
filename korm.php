@@ -19,12 +19,13 @@
     private $wh_str = '';
     private $ord_str = '';
     private $where = '';
+    private $increment = '';
 
 
 
   	function __construct($ORM, $conf = ''){
   		$this->ORM = $ORM;
-  		$this->config = $conf; //текущая конфигурация
+  		$this->conf = $conf; //текущая конфигурация
   	}
 
 
@@ -336,8 +337,9 @@
       $result = $this->query($sql);
         
       if ($this->increment !== '') {
-        while ($row = $result->fetch_assoc())
+        while ($row = $result->fetch_assoc()) {
           $result_array[$row[$this->increment]] = $row;
+        }
       }
       else {
            while ($row = $result->fetch_assoc())
@@ -484,6 +486,7 @@
       foreach($this->set as $key => $set){
         
         $set = trim($set);
+        $values = '';
 
         if ($set !== '') {
           
