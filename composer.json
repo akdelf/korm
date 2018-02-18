@@ -2,7 +2,6 @@
     "name": "masterforweb/korm",
     "description": "a PHP micro ORM",
     "homepage": "https://github.com/akdelf/korm",
-    "version": "1.3",
     "keywords": ["ORM"],
     "autoload": {
         "files": ["korm.php"]
